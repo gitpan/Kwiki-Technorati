@@ -8,7 +8,7 @@ const technorati_base_url  => 'http://api.technorati.com/cosmos';
 const default_cache_expire => '1 h';
 const no_key_error         => { error => 'No technorati key' };
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub register {
     my $registry = shift;
@@ -60,7 +60,7 @@ sub html {
         $self->technorati->get_technorati_cosmos($url, 1);
     $self->technorati->clean_cosmos($cosmos);
     $cosmos = { error => 'technorati key or request url error'}
-        unless (defined($cosmos->{items}));
+        unless (defined($cosmos->{items}) or defined($cosmos->{error}));
     $self->hub->template->process('fetchrss.html', full => 1, %$cosmos);
 }
 
