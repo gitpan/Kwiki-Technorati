@@ -1,5 +1,5 @@
 name: Kwiki-Technorati
-version: 0.03
+version: 0.04
 abstract: Access Technorati Cosmos with WAFL
 author: Chris Dent <chris.dent@socialtext.com>
 license: perl

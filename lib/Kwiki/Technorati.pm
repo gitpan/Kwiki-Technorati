@@ -7,8 +7,9 @@ const class_title          => 'Technorati';
 const technorati_base_url  => 'http://api.technorati.com/cosmos';
 const default_cache_expire => '1 h';
 const no_key_error         => { error => 'No technorati key' };
+const config_file          => 'technorati.yaml';
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub register {
     my $registry = shift;
@@ -32,20 +33,17 @@ sub clean_cosmos {
 }
 
 sub get_technorati_cosmos {
-    my $search_url = shift || $self->default_search_url;
-    my $full = shift || 0;
+    my $search_url = CGI::escape(shift);
 
-    my $technorati_key;
-    $technorati_key = $self->config->technorati_key
-        if ($self->config->can('technorati_key'));
+    my $technorati_key = $self->hub->config->technorati_key;
 
     return $self->no_key_error unless $technorati_key;
 
     my $techno_url = $self->technorati_base_url . '?' .
         "key=$technorati_key&url=$search_url&type=link&format=rss&limit=10";
 
-    $self->use_class('fetchrss');
-    $self->fetchrss->get_rss($techno_url, $self->default_cache_expire);
+    $self->hub->fetchrss->timeout($self->hub->config->technorati_timeout);
+    $self->hub->fetchrss->get_rss($techno_url, $self->default_cache_expire);
 }
     
 ##########################################################################
@@ -54,11 +52,9 @@ use base 'Spoon::Formatter::WaflPhrase';
 use Spoon::Formatter;
 
 sub html {
-    $self->use_class('technorati');
     my $url = $self->arguments;
-    my $cosmos =
-        $self->technorati->get_technorati_cosmos($url, 1);
-    $self->technorati->clean_cosmos($cosmos);
+    my $cosmos = $self->hub->technorati->get_technorati_cosmos($url, 1);
+    $self->hub->technorati->clean_cosmos($cosmos);
     $self->hub->template->process('fetchrss.html', full => 1, %$cosmos);
 }
 
@@ -109,5 +105,4 @@ it under the same terms as Perl itself.
 
 __config/technorati.yaml__
 technorati_key:
-
-
+technorati_timeout: 60
